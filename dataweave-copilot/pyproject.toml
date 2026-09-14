@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dataweave-copilot"
+version = "0.1.0"
+description = "AI copilot for MuleSoft DataWeave 2.0 -- generate transformations from a plain-English spec, get them explained, and get real edge-case MUnit tests written for them."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Srinivasarao Polagani" }]
+keywords = ["dataweave", "mulesoft", "anthropic", "claude", "llm", "code-generation"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development :: Code Generators",
+]
+dependencies = [
+    "anthropic>=0.90",
+    "pydantic>=2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+]
+
+[project.urls]
+Homepage = "https://github.com/srinivasarao-polagani/dataweave-copilot"
+
+[project.scripts]
+dataweave-copilot = "dataweave_copilot.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["dataweave_copilot*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

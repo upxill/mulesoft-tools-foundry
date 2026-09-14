@@ -1,0 +1,23 @@
+{
+  "orderId": "ORD-1001",
+  "customerName": "Ada Lovelace",
+  "lineItems": [
+    {
+      "sku": "WIDGET-1",
+      "description": "Widget",
+      "quantity": 3,
+      "unitPrice": 9.99,
+      "lineTotal": 29.97
+    },
+    {
+      "sku": "GIZMO-3",
+      "description": "Gizmo",
+      "quantity": 2,
+      "unitPrice": 15,
+      "lineTotal": 30
+    }
+  ],
+  "subtotal": 59.97,
+  "tax": 4.8,
+  "total": 64.77
+}

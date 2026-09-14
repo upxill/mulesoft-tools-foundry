@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Global connector configurations for the seeded-issues example app.
+
+  SEEDED ISSUES in this file (for mule-flow-doctor to find):
+    1. `dbConfig`'s connection has NO <reconnection> strategy.
+    2. `dbConfig`'s connection has a hardcoded database password instead of
+       a `${db.password}` / `${secure::db.password}` property placeholder.
+    3. `paymentServiceConfig` and `inventoryServiceConfig` (the outbound
+       HTTP configs used by orders-flow.xml) have NO <reconnection> strategy
+       configured on their connections.
+
+  XML shape confirmed 2026-09-13 against:
+    - https://docs.mulesoft.com/http-connector/latest/http-connector-xml-reference
+    - https://docs.mulesoft.com/mule-runtime/latest/reconnection-strategy-about
+    - https://docs.mulesoft.com/db-connector/latest/database-connector-connection
+  See README.md "Mule 4 XML schema research" section for details.
+-->
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:db="http://www.mulesoft.org/schema/mule/db"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- Inbound listener config used by orders-flow.xml -->
+    <http:listener-config name="orders-api-listener-config" basePath="/api">
+        <http:listener-connection host="0.0.0.0" port="8081"/>
+    </http:listener-config>
+
+    <!-- Outbound: payment service. NOTE: no <reconnection> on this connection. -->
+    <http:request-config name="paymentServiceConfig" basePath="/payments">
+        <http:request-connection host="payments.internal.example.com" port="443" protocol="HTTPS"/>
+    </http:request-config>
+
+    <!-- Outbound: inventory service. NOTE: no <reconnection> on this connection either. -->
+    <http:request-config name="inventoryServiceConfig" basePath="/inventory">
+        <http:request-connection host="inventory.internal.example.com" port="443" protocol="HTTPS"/>
+    </http:request-config>
+
+    <!-- Database config with a hardcoded password (seeded secret) and no reconnection strategy. -->
+    <db:config name="ordersDbConfig">
+        <db:my-sql-connection host="orders-db.internal.example.com" port="3306"
+                               user="orders_svc" password="Sup3rSecretP@ss123!"/>
+    </db:config>
+
+</mule>

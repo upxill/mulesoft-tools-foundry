@@ -1,0 +1,20 @@
+Convert an order (with a customer and a list of line items) into an invoice.
+
+Rules:
+- Exclude any line item whose "status" is "cancelled" -- only confirmed
+  line items appear on the invoice and count toward totals.
+- For each remaining line item, compute lineTotal = quantity * unitPrice.
+- subtotal is the sum of all included lineTotals.
+- tax is 8% of the subtotal.
+- total is subtotal + tax.
+- Round subtotal, tax, and total to 2 decimal places.
+
+Output shape:
+{
+  "orderId": <the order's orderId>,
+  "customerName": <customer.name>,
+  "lineItems": [ { "sku", "description", "quantity", "unitPrice", "lineTotal" }, ... ],
+  "subtotal": <number>,
+  "tax": <number>,
+  "total": <number>
+}

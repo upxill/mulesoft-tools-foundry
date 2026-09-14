@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Billing sub-flow, called via <flow-ref> from orders-flow.xml.
+
+  SEEDED ISSUE in this file: the DataWeave transform below scans
+  `payload.orders` twice: once via `map` to build the per-order billing
+  summary, and once again via a nested `filter` *inside* that map's lambda
+  (to count "duplicate" orders for the same customer), when the same
+  result could be computed in a single pass (e.g. with `groupBy`). This is
+  the classic O(n^2) "full linear scan inside a loop" DataWeave anti-pattern.
+
+  DataWeave-in-XML embedding (<ee:transform>/<ee:message>/<ee:set-payload>
+  with a %dw 2.0 CDATA body) confirmed 2026-09-13 against:
+    https://docs.mulesoft.com/mule-runtime/latest/flow-component
+-->
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <sub-flow name="billing-calculate-subflow">
+        <ee:transform doc:name="Calculate billing summary">
+            <ee:message>
+                <ee:set-payload><![CDATA[
+%dw 2.0
+output application/json
+---
+payload.orders map (order) -> {
+    id: order.id,
+    total: order.items reduce ((item, acc = 0) -> acc + item.price),
+    // Inefficient: re-scans payload.orders for every single order above
+    // instead of grouping/indexing it once before the outer map.
+    duplicateCountForCustomer: sizeOf(payload.orders filter (o) -> o.customerId == order.customerId)
+}
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Log billing summary" message="#[payload]"/>
+    </sub-flow>
+
+</mule>

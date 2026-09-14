@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+      xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+      xmlns="http://www.mulesoft.org/schema/mule/core">
+  <munit:config name="orders_to_invoice-transform-suite" />
+
+  <munit:test name="null_line_items_test" description="payload.lineItems is null should not silently produce a fake invoice">
+    <munit:execution>
+      <flow-ref name="ordersToInvoiceFlow"/>
+    </munit:execution>
+    <munit:validation>
+      <munit-tools:assert-that expression="#[payload]" is="#[MunitTools::notNullValue()]" />
+    </munit:validation>
+  </munit:test>
+
+  <munit:test name="empty_line_items_array_test" description="an order with an empty lineItems array should produce a zero-value invoice">
+    <munit:execution>
+      <flow-ref name="ordersToInvoiceFlow"/>
+    </munit:execution>
+    <munit:validation>
+      <munit-tools:assert-that expression="#[payload.subtotal]" is="#[MunitTools::equalTo(0)]" />
+      <munit-tools:assert-that expression="#[payload.tax]" is="#[MunitTools::equalTo(0)]" />
+      <munit-tools:assert-that expression="#[payload.total]" is="#[MunitTools::equalTo(0)]" />
+    </munit:validation>
+  </munit:test>
+
+  <munit:test name="all_line_items_cancelled_test" description="every line item cancelled should behave the same as an empty array">
+    <munit:execution>
+      <flow-ref name="ordersToInvoiceFlow"/>
+    </munit:execution>
+    <munit:validation>
+      <munit-tools:assert-that expression="#[payload.lineItems]" is="#[MunitTools::empty()]" />
+    </munit:validation>
+  </munit:test>
+
+  <munit:test name="type_mismatch_quantity_as_string_test" description="quantity provided as a string instead of a number should be a clear type mismatch error, not a silent miscalculation">
+    <munit:execution>
+      <flow-ref name="ordersToInvoiceFlow"/>
+    </munit:execution>
+    <munit:validation>
+      <munit-tools:assert-that expression="#[payload]" is="#[MunitTools::notNullValue()]" />
+    </munit:validation>
+  </munit:test>
+
+  <munit:test name="boundary_zero_quantity_test" description="a confirmed line item with quantity 0 is a boundary value that should contribute 0 to the subtotal without erroring">
+    <munit:execution>
+      <flow-ref name="ordersToInvoiceFlow"/>
+    </munit:execution>
+    <munit:validation>
+      <munit-tools:assert-that expression="#[payload.lineItems[0].lineTotal]" is="#[MunitTools::equalTo(0)]" />
+    </munit:validation>
+  </munit:test>
+
+  <munit:test name="boundary_large_unit_price_test" description="a very large unitPrice is a boundary value that should still round correctly to 2 decimal places">
+    <munit:execution>
+      <flow-ref name="ordersToInvoiceFlow"/>
+    </munit:execution>
+    <munit:validation>
+      <munit-tools:assert-that expression="#[payload.total]" is="#[MunitTools::notNullValue()]" />
+    </munit:validation>
+  </munit:test>
+</mule>

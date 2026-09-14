@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mule-flow-doctor"
+version = "0.1.0"
+description = "An AI-powered architectural reviewer for MuleSoft Mule 4 application XML."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Srinivasarao Polagani" }]
+requires-python = ">=3.10"
+dependencies = [
+    "anthropic>=0.90",
+    "pydantic>=2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+]
+
+[project.scripts]
+mule-flow-doctor = "mule_flow_doctor.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["mule_flow_doctor*"]

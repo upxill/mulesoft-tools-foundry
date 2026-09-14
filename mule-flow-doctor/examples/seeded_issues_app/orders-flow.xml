@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Main orders flow for the seeded-issues example app.
+
+  SEEDED ISSUES in this file:
+    1. NO <error-handler> anywhere in this flow, even though it makes two
+       outbound calls to external systems (payment + inventory services).
+    2. The `http:request` to the payment service carries a hardcoded-looking
+       API key in a header (`apiKey="EXAMPLE-NOT-A-REAL-KEY-hardcoded-do-not-use"`)
+       instead of a `${secure::payment.api.key}` property placeholder.
+    3. Both outbound http:request calls use configs (paymentServiceConfig,
+       inventoryServiceConfig, see global-config.xml) that have no
+       reconnection strategy configured.
+
+  <flow>, <flow-ref>, <http:listener>, <http:request> shapes confirmed
+  2026-09-13 against:
+    https://docs.mulesoft.com/mule-runtime/latest/flow-component
+    https://docs.mulesoft.com/http-connector/latest/http-connector-xml-reference
+-->
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <flow name="orders-process-flow">
+        <http:listener config-ref="orders-api-listener-config" path="/orders" allowedMethods="POST" doc:name="POST /orders"/>
+
+        <ee:transform doc:name="Read order payload">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <flow-ref name="billing-calculate-subflow" doc:name="Calculate billing"/>
+
+        <!-- No error handling around either outbound call below, and the
+             payment call carries a hardcoded API key. -->
+        <http:request config-ref="paymentServiceConfig" path="/charge" method="POST" doc:name="Charge payment">
+            <http:headers><![CDATA[#[{
+    "apiKey": "EXAMPLE-NOT-A-REAL-KEY-hardcoded-do-not-use",
+    "Content-Type": "application/json"
+}]]]></http:headers>
+        </http:request>
+
+        <http:request config-ref="inventoryServiceConfig" path="/reserve" method="POST" doc:name="Reserve inventory"/>
+
+        <logger level="INFO" doc:name="Log completion" message="#['Order processed: ' ++ payload.id]"/>
+    </flow>
+
+</mule>

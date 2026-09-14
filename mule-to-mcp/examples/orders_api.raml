@@ -1,0 +1,105 @@
+#%RAML 1.0
+title: Orders API
+version: v1
+baseUri: http://127.0.0.1:8091
+mediaType: application/json
+description: |
+  A small MuleSoft-style Orders API, fronted by Anypoint's "Client ID
+  enforcement" policy: every request must carry a valid client_id and
+  client_secret header pair, issued to a connected app.
+
+securitySchemes:
+  client_id_enforcement:
+    type: x-custom
+    description: |
+      Anypoint's Client ID enforcement policy. Requires two headers on every
+      request; the gateway (here, the bundled mock API) rejects requests
+      missing or mismatching either one with 401.
+    describedBy:
+      headers:
+        client_id:
+          type: string
+          description: The connected app's client ID.
+        client_secret:
+          type: string
+          description: The connected app's client secret.
+      responses:
+        401:
+          description: Missing or invalid client_id/client_secret.
+
+securedBy: [client_id_enforcement]
+
+types:
+  Order:
+    type: object
+    properties:
+      id: string
+      customerName: string
+      status: string
+      total: number
+  OrderInput:
+    type: object
+    properties:
+      customerName: string
+      items:
+        type: array
+        items: string
+      total: number
+  OrderStatusUpdate:
+    type: object
+    properties:
+      status: string
+
+/orders:
+  displayName: Orders
+  get:
+    displayName: List Orders
+    description: List all orders, optionally filtered by status.
+    queryParameters:
+      status?:
+        type: string
+        description: Filter orders by status (e.g. PENDING, SHIPPED, CANCELLED).
+    responses:
+      200:
+        body:
+          application/json:
+            type: Order[]
+  post:
+    displayName: Create Order
+    description: Create a new order for a customer.
+    body:
+      application/json:
+        type: OrderInput
+    responses:
+      201:
+        body:
+          application/json:
+            type: Order
+  /{orderId}:
+    uriParameters:
+      orderId:
+        type: string
+        description: The order's unique identifier.
+    get:
+      displayName: Get Order By Id
+      description: Retrieve a single order by its ID.
+      responses:
+        200:
+          body:
+            application/json:
+              type: Order
+        404:
+          description: Order not found.
+    put:
+      displayName: Update Order Status
+      description: Update the status of an existing order.
+      body:
+        application/json:
+          type: OrderStatusUpdate
+      responses:
+        200:
+          body:
+            application/json:
+              type: Order
+        404:
+          description: Order not found.

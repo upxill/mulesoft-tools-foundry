@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg
+.DS_Store
+
+# Local output of `mule-to-mcp generate` used for manual/quickstart testing —
+# a build artifact of this repo's own generator, not source to commit.
+/generated-orders-mcp/

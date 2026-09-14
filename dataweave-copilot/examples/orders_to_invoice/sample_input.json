@@ -1,0 +1,30 @@
+{
+  "orderId": "ORD-1001",
+  "customer": {
+    "name": "Ada Lovelace",
+    "email": "ada@example.com"
+  },
+  "lineItems": [
+    {
+      "sku": "WIDGET-1",
+      "description": "Widget",
+      "quantity": 3,
+      "unitPrice": 9.99,
+      "status": "confirmed"
+    },
+    {
+      "sku": "GADGET-2",
+      "description": "Gadget",
+      "quantity": 1,
+      "unitPrice": 49.50,
+      "status": "cancelled"
+    },
+    {
+      "sku": "GIZMO-3",
+      "description": "Gizmo",
+      "quantity": 2,
+      "unitPrice": 15.00,
+      "status": "confirmed"
+    }
+  ]
+}

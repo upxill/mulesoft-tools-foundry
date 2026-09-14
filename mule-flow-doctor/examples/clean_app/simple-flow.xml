@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  A small, well-formed Mule 4 app used to verify that mule-flow-doctor does
+  NOT falsely flag a clean application. Contrasts with examples/seeded_issues_app:
+
+    - The outbound http:request-connection HAS a <reconnection> strategy.
+    - The flow HAS an <error-handler> around calls to the external system.
+    - The one secret-shaped attribute uses a `${secure::...}` property
+      placeholder rather than a literal value.
+    - The DataWeave transform below traverses `payload.items` exactly once.
+
+  XML shapes confirmed 2026-09-13 against:
+    https://docs.mulesoft.com/mule-runtime/latest/flow-component
+    https://docs.mulesoft.com/mule-runtime/latest/error-handling
+    https://docs.mulesoft.com/mule-runtime/latest/reconnection-strategy-about
+    https://docs.mulesoft.com/http-connector/latest/http-connector-xml-reference
+-->
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <http:listener-config name="catalog-api-listener-config" basePath="/api">
+        <http:listener-connection host="0.0.0.0" port="8082"/>
+    </http:listener-config>
+
+    <http:request-config name="catalogServiceConfig" basePath="/catalog">
+        <http:request-connection host="catalog.internal.example.com" port="443" protocol="HTTPS">
+            <reconnection failsDeployment="true">
+                <reconnect count="3" frequency="2000"/>
+            </reconnection>
+        </http:request-connection>
+    </http:request-config>
+
+    <sub-flow name="format-items-subflow">
+        <ee:transform doc:name="Format items">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload.items map (item) -> {
+    sku: item.sku,
+    name: item.name,
+    priceFormatted: "$" ++ (item.price as String)
+}
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+    <flow name="catalog-lookup-flow">
+        <http:listener config-ref="catalog-api-listener-config" path="/catalog" allowedMethods="GET" doc:name="GET /catalog"/>
+
+        <http:request config-ref="catalogServiceConfig" path="/items" method="GET" doc:name="Fetch catalog items">
+            <http:headers><![CDATA[#[{
+    "apiKey": "${secure::catalog.api.key}",
+    "Accept": "application/json"
+}]]]></http:headers>
+        </http:request>
+
+        <flow-ref name="format-items-subflow" doc:name="Format items"/>
+
+        <logger level="INFO" doc:name="Log success" message="#['Returned ' ++ (sizeOf(payload) as String) ++ ' items']"/>
+
+        <error-handler>
+            <on-error-propagate enableNotifications="true" logException="true" doc:name="Propagate connectivity errors" type="HTTP:CONNECTIVITY, HTTP:TIMEOUT">
+                <logger level="ERROR" doc:name="Log connectivity error" message="#['Catalog service unavailable: ' ++ error.description]"/>
+            </on-error-propagate>
+            <on-error-continue enableNotifications="true" logException="true" doc:name="Continue on validation error" type="VALIDATION:INVALID_BOOLEAN, VALIDATION:INVALID_NUMBER">
+                <set-payload value="#[{error: 'invalid request'}]" doc:name="Set error payload"/>
+            </on-error-continue>
+        </error-handler>
+    </flow>
+
+</mule>
