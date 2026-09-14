@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Scheduled billing flow for the order-management example app.
+
+  Also exercises two different outbound calls in sequence (db:select then
+  http:request), using DIFFERENT config-refs than orders-flow.xml's calls
+  to the same operations, proving the tool disambiguates by config-ref
+  rather than just by operation name.
+
+  <scheduler>, <foreach>, <db:select>, <http:request> shapes confirmed
+  2026-09-13 against:
+    https://docs.mulesoft.com/mule-runtime/latest/flow-component
+    https://docs.mulesoft.com/http-connector/latest/http-connector-xml-reference
+    https://docs.mulesoft.com/db-connector/latest/database-connector-connection
+-->
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:db="http://www.mulesoft.org/schema/mule/db"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+
+    <flow name="billing-scheduled-flow">
+        <scheduler doc:name="Every hour">
+            <scheduling-strategy>
+                <fixed-frequency frequency="3600000"/>
+            </scheduling-strategy>
+        </scheduler>
+
+        <!-- Outbound call #1 -->
+        <db:select config-ref="ordersDbConfig" doc:name="Fetch pending invoices">
+            <db:sql><![CDATA[SELECT * FROM invoices WHERE status = 'PENDING']]></db:sql>
+        </db:select>
+
+        <foreach doc:name="For each invoice">
+            <!-- Outbound call #2: a different connector/operation than #1,
+                 and a different config-ref than orders-flow.xml's own
+                 http:request call. -->
+            <http:request config-ref="paymentServiceConfig" path="/charge" method="POST" doc:name="Submit payment"/>
+
+            <logger level="INFO" doc:name="Log payment submitted" message="#['Submitted payment for invoice ' ++ payload.id]"/>
+        </foreach>
+    </flow>
+
+</mule>

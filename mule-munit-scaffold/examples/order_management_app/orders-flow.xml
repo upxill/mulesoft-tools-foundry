@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Main order-intake flow for the order-management example app.
+
+  Exercises TWO different outbound connector calls in sequence inside one
+  flow (http:request then db:select), which is what
+  `mule-munit-scaffold generate` is meant to find ALL of, not just the
+  first, plus a flow-ref to a sub-flow that itself makes a third
+  outbound call (db:insert), used to exercise the include-subflows option.
+
+  <flow>, <sub-flow>, <flow-ref>, <choice>, <http:listener>, <http:request>,
+  <db:select>, <db:insert> shapes confirmed 2026-09-13 against:
+    https://docs.mulesoft.com/mule-runtime/latest/flow-component
+    https://docs.mulesoft.com/http-connector/latest/http-connector-xml-reference
+    https://docs.mulesoft.com/db-connector/latest/database-connector-connection
+-->
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:db="http://www.mulesoft.org/schema/mule/db"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <flow name="orders-process-flow">
+        <http:listener config-ref="orders-api-listener-config" path="/orders" allowedMethods="POST" doc:name="POST /orders"/>
+
+        <ee:transform doc:name="Read order payload">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <!-- Outbound call #1: check inventory before accepting the order. -->
+        <http:request config-ref="inventoryServiceConfig" path="/reserve" method="POST" doc:name="Check inventory"/>
+
+        <choice doc:name="Inventory available?">
+            <when expression="#[payload.available == true]">
+                <!-- Outbound call #2: a different connector/operation than #1. -->
+                <db:select config-ref="ordersDbConfig" doc:name="Look up customer">
+                    <db:sql><![CDATA[SELECT * FROM customers WHERE id = :customerId]]></db:sql>
+                    <db:input-parameters><![CDATA[#[{customerId: payload.customerId}]]]></db:input-parameters>
+                </db:select>
+
+                <flow-ref name="order-enrichment-subflow" doc:name="Enrich and save order"/>
+
+                <logger level="INFO" doc:name="Log success" message="#['Order accepted for customer ' ++ payload.customerId]"/>
+            </when>
+            <otherwise>
+                <set-payload value="#[{status: 'REJECTED', reason: 'insufficient inventory'}]" doc:name="Set rejection payload"/>
+                <logger level="WARN" doc:name="Log rejection" message="#['Order rejected: insufficient inventory']"/>
+            </otherwise>
+        </choice>
+    </flow>
+
+    <sub-flow name="order-enrichment-subflow">
+        <ee:transform doc:name="Build enriched order record">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload ++ {enrichedAt: now()}
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <!-- Outbound call made only from the sub-flow: only picked up
+             when mule-munit-scaffold is run with the include-subflows option. -->
+        <db:insert config-ref="ordersDbConfig" doc:name="Save enriched order">
+            <db:sql><![CDATA[INSERT INTO orders (customer_id, enriched_at) VALUES (:customerId, :enrichedAt)]]></db:sql>
+            <db:input-parameters><![CDATA[#[{customerId: payload.customerId, enrichedAt: payload.enrichedAt}]]]></db:input-parameters>
+        </db:insert>
+    </sub-flow>
+
+</mule>

@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="&#10;        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd&#10;        http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd&#10;        http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd&#10;    ">
+    <munit:config name="generated-test-suite" />
+    <munit:test name="test-billing-scheduled-flow" description="Auto-generated skeleton for flow 'billing-scheduled-flow'. Fill in real mock payloads and assertions before relying on this test.">
+        <munit:behavior>
+            <munit-tools:mock-when processor="db:select" doc:name="Mock db:select - config-ref=ordersDbConfig">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute attributeName="config-ref" whereValue="#['ordersDbConfig']" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:payload value="#[{ mocked: true, operation: 'db:select', note: 'TODO(db_select): replace with a realistic mock response payload' }]" mediaType="application/json" />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+            <munit-tools:mock-when processor="http:request" doc:name="Mock http:request - config-ref=paymentServiceConfig">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute attributeName="config-ref" whereValue="#['paymentServiceConfig']" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:payload value="#[{ mocked: true, operation: 'http:request', note: 'TODO(http_request): replace with a realistic mock response payload' }]" mediaType="application/json" />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+        <munit:execution>
+            <!-- This flow is triggered by a scheduler (no meaningful inbound payload/attributes in production) - this set-event stub may not be needed; remove it if the flow ignores its inbound event. -->
+            <munit:set-event>
+                <munit:payload value="#[{}]" mediaType="application/json" />
+            </munit:set-event>
+            <flow-ref name="billing-scheduled-flow" doc:name="Call billing-scheduled-flow" />
+        </munit:execution>
+        <munit:validation>
+            <!-- TODO: this is a placeholder assertion only - it proves the flow ran and produced a non-null payload, nothing about correctness. Replace with real assertions about the actual expected payload/attributes/variables for this flow. -->
+            <munit-tools:assert-that expression="#[payload]" is="#[MunitTools::notNullValue()]" />
+        </munit:validation>
+    </munit:test>
+    <munit:test name="test-orders-process-flow" description="Auto-generated skeleton for flow 'orders-process-flow'. Fill in real mock payloads and assertions before relying on this test.">
+        <munit:behavior>
+            <munit-tools:mock-when processor="http:request" doc:name="Mock http:request - config-ref=inventoryServiceConfig">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute attributeName="config-ref" whereValue="#['inventoryServiceConfig']" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:payload value="#[{ mocked: true, operation: 'http:request', note: 'TODO(http_request): replace with a realistic mock response payload' }]" mediaType="application/json" />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+            <munit-tools:mock-when processor="db:select" doc:name="Mock db:select - config-ref=ordersDbConfig">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute attributeName="config-ref" whereValue="#['ordersDbConfig']" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:payload value="#[{ mocked: true, operation: 'db:select', note: 'TODO(db_select): replace with a realistic mock response payload' }]" mediaType="application/json" />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+        <munit:execution>
+            <!-- TODO: replace this placeholder payload with a realistic request for this flow (e.g. the JSON/XML body an inbound http:listener would actually receive). -->
+            <munit:set-event>
+                <munit:payload value="#[{}]" mediaType="application/json" />
+            </munit:set-event>
+            <flow-ref name="orders-process-flow" doc:name="Call orders-process-flow" />
+        </munit:execution>
+        <munit:validation>
+            <!-- TODO: this is a placeholder assertion only - it proves the flow ran and produced a non-null payload, nothing about correctness. Replace with real assertions about the actual expected payload/attributes/variables for this flow. -->
+            <munit-tools:assert-that expression="#[payload]" is="#[MunitTools::notNullValue()]" />
+        </munit:validation>
+    </munit:test>
+</mule>

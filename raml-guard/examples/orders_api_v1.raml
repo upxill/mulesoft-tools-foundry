@@ -1,0 +1,90 @@
+#%RAML 1.0
+title: Orders API
+version: v1
+baseUri: https://api.example.com/orders/{version}
+mediaType: application/json
+
+securitySchemes:
+  clientCredentials:
+    type: x-custom
+    describedBy:
+      headers:
+        X-ANYPOINT-CLIENT-ID:
+          type: string
+        X-ANYPOINT-CLIENT-SECRET:
+          type: string
+
+securedBy: [clientCredentials]
+
+types:
+  Order:
+    type: object
+    properties:
+      id: string
+      customerName: string
+      status:
+        type: string
+        enum: [PENDING, SHIPPED, DELIVERED]
+      total: number
+      notes?: string
+
+  OrderRequest:
+    type: object
+    properties:
+      customerName: string
+      items:
+        type: array
+        items:
+          type: object
+          properties:
+            sku: string
+            quantity: integer
+
+/orders:
+  displayName: Orders
+  get:
+    displayName: List Orders
+    description: Returns a paginated list of orders.
+    queryParameters:
+      status?:
+        type: string
+        enum: [PENDING, SHIPPED, DELIVERED]
+      limit?:
+        type: integer
+        default: 20
+    responses:
+      200:
+        body:
+          application/json:
+            type: array
+            items: Order
+      404:
+        description: No orders found for the given filter.
+  post:
+    displayName: Create Order
+    description: Creates a new order.
+    body:
+      application/json:
+        type: OrderRequest
+    responses:
+      201:
+        body:
+          application/json:
+            type: Order
+      400:
+        description: Invalid order payload.
+
+/orders/{orderId}:
+  uriParameters:
+    orderId:
+      type: string
+  get:
+    displayName: Get Order
+    description: Returns a single order by id.
+    responses:
+      200:
+        body:
+          application/json:
+            type: Order
+      404:
+        description: Order not found.

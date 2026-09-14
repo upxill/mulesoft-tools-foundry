@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example.mule</groupId>
+    <artifactId>connector-audit-demo-app</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>mule-application</packaging>
+    <name>connector-audit-demo-app</name>
+
+    <!--
+      This is a real, working demo pom.xml used by mule-connector-audit's
+      own README to demonstrate a live run against the real Maven Central
+      Search API. The connector coordinates below are genuine, published
+      MuleSoft connector artifacts (confirmed live against
+      search.maven.org during this project's development - see the
+      README's "Live verification" section), deliberately pinned to real,
+      old historical version numbers so the tool has something real to
+      flag as behind.
+    -->
+    <properties>
+        <mule.version>4.6.0</mule.version>
+        <!-- Real Mule projects very commonly pin connector versions via a
+             ${...} property like this rather than a literal <version> -
+             mule-connector-audit's pom_parser.py resolves these. -->
+        <http.connector.version>0.8.0-BETA.4</http.connector.version>
+        <objectstore.connector.version>0.8.0-BETA.4</objectstore.connector.version>
+    </properties>
+
+    <dependencies>
+        <!-- Pinned via a ${property} reference, deliberately behind the
+             real Maven Central latest (0.9.0, released 2017-09-28). -->
+        <dependency>
+            <groupId>org.mule.connectors</groupId>
+            <artifactId>mule-http-connector</artifactId>
+            <version>${http.connector.version}</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+
+        <!-- Pinned with a literal version, also deliberately behind. -->
+        <dependency>
+            <groupId>org.mule.connectors</groupId>
+            <artifactId>mule-db-connector</artifactId>
+            <version>0.8.0-BETA.4</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+
+        <!-- Pinned exactly at the real Maven Central latest (0.9.0) - should
+             report as up to date on version, but still "possibly abandoned"
+             since that latest release is itself from 2017. -->
+        <dependency>
+            <groupId>org.mule.connectors</groupId>
+            <artifactId>mule-sockets-connector</artifactId>
+            <version>0.9.0</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+
+        <!-- Pinned via a ${property} reference, deliberately behind. -->
+        <dependency>
+            <groupId>org.mule.connectors</groupId>
+            <artifactId>mule-objectstore-connector</artifactId>
+            <version>${objectstore.connector.version}</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+
+        <!-- A certified/premium connector distributed via Anypoint Exchange,
+             not published to Maven Central at all (confirmed live: querying
+             g:"com.mulesoft.connectors" against search.maven.org returns
+             zero results) - demonstrates the "not found" handling path. -->
+        <dependency>
+            <groupId>com.mulesoft.connectors</groupId>
+            <artifactId>mule-salesforce-connector</artifactId>
+            <version>10.5.0</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+
+        <!-- Non-connector dependency, included to show the tool correctly
+             ignores anything that isn't a MuleSoft connector coordinate. -->
+        <dependency>
+            <groupId>org.mule.tests</groupId>
+            <artifactId>mule-tests-functional</artifactId>
+            <version>4.6.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.mule.tools.maven</groupId>
+                <artifactId>mule-maven-plugin</artifactId>
+                <version>4.1.0</version>
+                <extensions>true</extensions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

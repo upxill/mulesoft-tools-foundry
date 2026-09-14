@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mule-connector-audit"
+version = "0.1.0"
+description = "Audits a Mule 4 project's pom.xml for stale MuleSoft connector dependencies against the real Maven Central Search API. No API key required."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Srinivasarao Polagani" }]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+explain = [
+    "anthropic>=0.90",
+]
+dev = [
+    "pytest>=7",
+]
+
+[project.scripts]
+mule-connector-audit = "mule_connector_audit.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["mule_connector_audit*"]

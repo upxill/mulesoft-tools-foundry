@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "raml-guard"
+version = "0.1.0"
+description = "Deterministic CI gate that diffs two RAML 1.0 specs and classifies changes as breaking, non-breaking, or informational."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Srinivasarao Polagani" }]
+dependencies = [
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+llm = ["anthropic>=0.40.0"]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+raml-guard = "raml_guard.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["raml_guard*"]

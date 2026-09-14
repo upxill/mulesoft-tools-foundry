@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mule-log-tracer"
+version = "0.1.0"
+description = "Deterministic correlation-ID waterfall tracing and anomaly detection for Mule/CloudHub-style application logs -- no API key required for its core function."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Srinivasarao Polagani" }]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+explain = ["anthropic>=0.40.0"]
+
+[project.scripts]
+mule-log-tracer = "mule_log_tracer.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["mule_log_tracer*"]

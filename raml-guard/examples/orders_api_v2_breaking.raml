@@ -1,0 +1,82 @@
+#%RAML 1.0
+title: Orders API
+version: v2
+baseUri: https://api.example.com/orders/{version}
+mediaType: application/json
+
+# Deliberately seeded breaking changes vs orders_api_v1.raml, for demoing
+# raml-guard's detection:
+#   1. GET /orders/{orderId} (the whole /orders/{orderId} resource) removed.
+#   2. GET /orders' `status` query parameter changed from optional to required.
+#   3. The `status` enum on the Order type lost the `SHIPPED` value.
+#   4. The `total` field on the Order type narrowed from `number` to `integer`.
+
+securitySchemes:
+  clientCredentials:
+    type: x-custom
+    describedBy:
+      headers:
+        X-ANYPOINT-CLIENT-ID:
+          type: string
+        X-ANYPOINT-CLIENT-SECRET:
+          type: string
+
+securedBy: [clientCredentials]
+
+types:
+  Order:
+    type: object
+    properties:
+      id: string
+      customerName: string
+      status:
+        type: string
+        enum: [PENDING, DELIVERED]
+      total: integer
+      notes?: string
+
+  OrderRequest:
+    type: object
+    properties:
+      customerName: string
+      items:
+        type: array
+        items:
+          type: object
+          properties:
+            sku: string
+            quantity: integer
+
+/orders:
+  displayName: Orders
+  get:
+    displayName: List Orders
+    description: Returns a paginated list of orders.
+    queryParameters:
+      status:
+        type: string
+        enum: [PENDING, DELIVERED]
+      limit?:
+        type: integer
+        default: 20
+    responses:
+      200:
+        body:
+          application/json:
+            type: array
+            items: Order
+      404:
+        description: No orders found for the given filter.
+  post:
+    displayName: Create Order
+    description: Creates a new order.
+    body:
+      application/json:
+        type: OrderRequest
+    responses:
+      201:
+        body:
+          application/json:
+            type: Order
+      400:
+        description: Invalid order payload.

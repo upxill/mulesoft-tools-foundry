@@ -1,0 +1,114 @@
+#%RAML 1.0
+title: Orders API
+version: v2
+baseUri: https://api.example.com/orders/{version}
+mediaType: application/json
+
+# Additive-only changes vs orders_api_v1.raml, for demoing that raml-guard
+# correctly finds ZERO breaking changes here:
+#   1. New optional query parameter `sortBy` on GET /orders.
+#   2. New enum value `CANCELLED` added to the `status` enum (widening).
+#   3. New optional field `giftMessage` added to Order and OrderRequest.
+#   4. New response status 202 added to POST /orders.
+#   5. New endpoint DELETE /orders/{orderId} added.
+#   6. Description text changed on GET /orders (documentation-only).
+
+securitySchemes:
+  clientCredentials:
+    type: x-custom
+    describedBy:
+      headers:
+        X-ANYPOINT-CLIENT-ID:
+          type: string
+        X-ANYPOINT-CLIENT-SECRET:
+          type: string
+
+securedBy: [clientCredentials]
+
+types:
+  Order:
+    type: object
+    properties:
+      id: string
+      customerName: string
+      status:
+        type: string
+        enum: [PENDING, SHIPPED, DELIVERED, CANCELLED]
+      total: number
+      notes?: string
+      giftMessage?: string
+
+  OrderRequest:
+    type: object
+    properties:
+      customerName: string
+      items:
+        type: array
+        items:
+          type: object
+          properties:
+            sku: string
+            quantity: integer
+      giftMessage?: string
+
+/orders:
+  displayName: Orders
+  get:
+    displayName: List Orders
+    description: Returns a paginated list of orders, optionally filtered and sorted.
+    queryParameters:
+      status?:
+        type: string
+        enum: [PENDING, SHIPPED, DELIVERED, CANCELLED]
+      limit?:
+        type: integer
+        default: 20
+      sortBy?:
+        type: string
+        enum: [createdAt, total]
+    responses:
+      200:
+        body:
+          application/json:
+            type: array
+            items: Order
+      404:
+        description: No orders found for the given filter.
+  post:
+    displayName: Create Order
+    description: Creates a new order.
+    body:
+      application/json:
+        type: OrderRequest
+    responses:
+      201:
+        body:
+          application/json:
+            type: Order
+      202:
+        description: Order accepted for asynchronous processing.
+      400:
+        description: Invalid order payload.
+
+/orders/{orderId}:
+  uriParameters:
+    orderId:
+      type: string
+  get:
+    displayName: Get Order
+    description: Returns a single order by id.
+    responses:
+      200:
+        body:
+          application/json:
+            type: Order
+      404:
+        description: Order not found.
+  delete:
+    displayName: Cancel Order
+    description: Cancels an existing order.
+    responses:
+      204:
+        description: Order cancelled.
+      404:
+        description: Order not found.

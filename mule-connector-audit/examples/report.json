@@ -1,0 +1,75 @@
+{
+  "pom_path": "examples/pom.xml",
+  "total_dependencies": 6,
+  "connector_count": 5,
+  "summary": {
+    "up-to-date": 1,
+    "minor-behind": 3,
+    "major-behind": 0,
+    "not-found": 1,
+    "unpinned": 0,
+    "possibly-abandoned": 4
+  },
+  "connectors": [
+    {
+      "group_id": "org.mule.connectors",
+      "artifact_id": "mule-http-connector",
+      "pinned_version": "0.8.0-BETA.4",
+      "latest_version": "0.9.0",
+      "found_on_maven_central": true,
+      "staleness": "minor-behind",
+      "possibly_abandoned": true,
+      "days_since_release": 3272,
+      "last_release_date": "2017-09-28",
+      "detail": "Pinned 0.8.0-BETA.4 vs. latest 0.9.0 on Maven Central (2 version(s) indexed). Latest version was released 3272 days ago (~9.0 years). Flagged possibly abandoned: no newer version indexed on Maven Central in over 730 days."
+    },
+    {
+      "group_id": "org.mule.connectors",
+      "artifact_id": "mule-db-connector",
+      "pinned_version": "0.8.0-BETA.4",
+      "latest_version": "0.9.0",
+      "found_on_maven_central": true,
+      "staleness": "minor-behind",
+      "possibly_abandoned": true,
+      "days_since_release": 3272,
+      "last_release_date": "2017-09-28",
+      "detail": "Pinned 0.8.0-BETA.4 vs. latest 0.9.0 on Maven Central (2 version(s) indexed). Latest version was released 3272 days ago (~9.0 years). Flagged possibly abandoned: no newer version indexed on Maven Central in over 730 days."
+    },
+    {
+      "group_id": "org.mule.connectors",
+      "artifact_id": "mule-sockets-connector",
+      "pinned_version": "0.9.0",
+      "latest_version": "0.9.0",
+      "found_on_maven_central": true,
+      "staleness": "up-to-date",
+      "possibly_abandoned": true,
+      "days_since_release": 3272,
+      "last_release_date": "2017-09-28",
+      "detail": "Pinned 0.9.0 vs. latest 0.9.0 on Maven Central (2 version(s) indexed). Latest version was released 3272 days ago (~9.0 years). Flagged possibly abandoned: no newer version indexed on Maven Central in over 730 days."
+    },
+    {
+      "group_id": "org.mule.connectors",
+      "artifact_id": "mule-objectstore-connector",
+      "pinned_version": "0.8.0-BETA.4",
+      "latest_version": "0.9.0",
+      "found_on_maven_central": true,
+      "staleness": "minor-behind",
+      "possibly_abandoned": true,
+      "days_since_release": 3272,
+      "last_release_date": "2017-09-28",
+      "detail": "Pinned 0.8.0-BETA.4 vs. latest 0.9.0 on Maven Central (2 version(s) indexed). Latest version was released 3272 days ago (~9.0 years). Flagged possibly abandoned: no newer version indexed on Maven Central in over 730 days."
+    },
+    {
+      "group_id": "com.mulesoft.connectors",
+      "artifact_id": "mule-salesforce-connector",
+      "pinned_version": "10.5.0",
+      "latest_version": null,
+      "found_on_maven_central": false,
+      "staleness": "not-found",
+      "possibly_abandoned": false,
+      "days_since_release": null,
+      "last_release_date": "n/a",
+      "detail": "Not found on Maven Central. This is common for premium/certified connectors (e.g. under com.mulesoft.connectors) distributed only via Anypoint Exchange / MuleSoft's own repository -- it does not necessarily mean the connector itself is abandoned."
+    }
+  ]
+}
